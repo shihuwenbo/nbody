@@ -62,8 +62,8 @@ void update(size_t n, float *part_pos, float *part_vel,
                 float r = sqrt(dx*dx+dy*dy);
                 
                 // regularize r to avoid numeric instability
-                if(r < 2.0) {
-                    r = 2.0;
+                if(r < 1.0) {
+                    r = 1.0;
                 }
 
                 // update force
