@@ -1,5 +1,4 @@
 #include <time.h>
-
 #include "utils.h"
 #include "sim.h"
 
@@ -14,10 +13,14 @@ int main() {
     float tacc = 0.0;
     float tvel = 0.0;
     float tpos = 0.0;
+    float gtacc = 0.0;
+
+    // error meassure between host and device
+    float diff_acc = 0.0;
 
     // simulation parameters
-    const size_t npart = 8192;
-    const size_t nsteps = 10;
+    const size_t npart = 2048;
+    const size_t nsteps = 1000;
     const float size_x = 1024.0;
     const float size_y = 512.0;
     const float center_x = size_x/2.0;
@@ -25,10 +28,10 @@ int main() {
     const float scale_x = size_x;
     const float scale_y = size_y;
     const float delta_t = 1.0e3;
-    const float scale_mass = 1000.0;
+    const float scale_mass = 100000.0;
     const float grav_const = 6.67384e-11;
 
-    // initialize particles
+    // initialize particles on host
     float *part_pos = (float*) safe_calloc(2*npart, sizeof(float));
     float *part_vel = (float*) safe_calloc(2*npart, sizeof(float));
     float *part_acc = (float*) safe_calloc(2*npart, sizeof(float));
@@ -36,10 +39,29 @@ int main() {
     init(npart, part_pos, part_vel, part_acc, part_mass,
             scale_x, scale_y, center_x, center_y, scale_mass);
 
+    // copy particles to device
+    float *gpart_pos;
+    float *gpart_vel;
+    float *gpart_acc;
+    float *gpart_mass;
+    cu_safe_falloc(&gpart_pos, 2*npart);
+    cu_safe_falloc(&gpart_vel, 2*npart);
+    cu_safe_falloc(&gpart_acc, 2*npart);
+    cu_safe_falloc(&gpart_mass, npart);
+    memcpy_htod(gpart_pos, part_pos, 2*npart);
+    memcpy_htod(gpart_vel, part_vel, 2*npart);
+    memcpy_htod(gpart_acc, part_acc, 2*npart);
+    memcpy_htod(gpart_mass, part_mass, npart);
+
+    // allocate space for host device comparison
+    float *cmp_part_pos = (float*) safe_calloc(2*npart, sizeof(float));
+    float *cmp_part_vel = (float*) safe_calloc(2*npart, sizeof(float));
+    float *cmp_part_acc = (float*) safe_calloc(2*npart, sizeof(float));
+
     // run iterations
     for(size_t i=0; i<nsteps; i++) {
 
-        // update particle - step 1 update acceleration
+        // step 1 update acceleration on host
         begin = clock();
         update_acc(npart, part_pos, part_vel, part_acc,
                 part_mass, grav_const);
@@ -47,23 +69,54 @@ int main() {
         dt_ms = ((float)(end-begin))/((float)(CLOCKS_PER_SEC)/1.0e9);
         tacc += dt_ms;
 
-        // update particle - step 2 update velocity
+        // step 1 update acceleration on device
+        begin = clock();
+        update_acc_gpu(npart, gpart_pos, gpart_vel, gpart_acc,
+                gpart_mass, grav_const);
+        end = clock();
+        dt_ms = ((float)(end-begin))/((float)(CLOCKS_PER_SEC)/1.0e9);
+        gtacc += dt_ms;
+
+        // step 1 verify result
+        memcpy_dtoh(cmp_part_acc, gpart_acc, 2*npart);
+        for(size_t j=0; j<npart; j++) {
+            float diffx = cmp_part_acc[2*j+0]-part_acc[2*j+0];
+            float diffy = cmp_part_acc[2*j+1]-part_acc[2*j+1];
+            diffx *= scale_mass;
+            diffy *= scale_mass;
+            diff_acc += diffx*diffx;
+            diff_acc += diffy*diffy;
+        }
+
+        // step 2 update velocity
         begin = clock();
         update_vel(npart, part_vel, part_acc, delta_t);
         end = clock();
         dt_ms = ((float)(end-begin))/((float)(CLOCKS_PER_SEC)/1.0e9);
         tvel += dt_ms;
-        
-        // update particle - step 3 update velocity
+
+        // step 2 copy velocity from host to device
+        memcpy_htod(gpart_vel, part_vel, 2*npart);
+   
+        // step 3 update position
         begin = clock();
         update_pos(npart, part_pos, part_vel, delta_t);
         end = clock();
         dt_ms = ((float)(end-begin))/((float)(CLOCKS_PER_SEC)/1.0e9);
         tpos += dt_ms;
+
+        // step 3 copy position from host to deice
+        memcpy_htod(gpart_pos, part_pos, 2*npart);
     }
 
     // print out timing information
     printf("update_acc: %fns/particle/step\n", tacc/npart/nsteps);
     printf("update_vel: %fns/particle/step\n", tvel/npart/nsteps);
     printf("update_pos: %fns/particle/step\n", tpos/npart/nsteps);
+
+    // print out timing information for gpu
+    printf("update_acc_gpu: %fns/particle/step\n", gtacc/npart/nsteps);
+
+    // print out error information for gpu
+    printf("err_acc: %f\n", diff_acc);
 }
