@@ -1,56 +1,69 @@
-#include <iostream>
-#include <vector>
-
-#include <SFML/Graphics.hpp>
+#include <time.h>
 
 #include "utils.h"
 #include "sim.h"
 
-using namespace std;
-
 int main() {
-    
+
+    // timing variable
+    clock_t begin;
+    clock_t end;
+    float dt_ms;
+
+    // timing information
+    float tacc = 0.0;
+    float tvel = 0.0;
+    float tpos = 0.0;
+
+    // simulation parameters
+    const size_t npart = 8192;
+    const size_t nsteps = 10;
+    const float size_x = 1024.0;
+    const float size_y = 512.0;
+    const float center_x = size_x/2.0;
+    const float center_y = size_y/2.0;
+    const float scale_x = size_x;
+    const float scale_y = size_y;
+    const float delta_t = 1.0e3;
+    const float scale_mass = 1000.0;
+    const float grav_const = 6.67384e-11;
+
     // initialize particles
     float *part_pos = (float*) safe_calloc(2*npart, sizeof(float));
     float *part_vel = (float*) safe_calloc(2*npart, sizeof(float));
     float *part_acc = (float*) safe_calloc(2*npart, sizeof(float));
-    float *part_mas = (float*) safe_calloc(npart, sizeof(float));
-    float *part_force = (float*) safe_calloc(2*npart, sizeof(float));
-    init(npart, part_pos, part_vel, part_acc, part_mas);
+    float *part_mass = (float*) safe_calloc(npart, sizeof(float));
+    init(npart, part_pos, part_vel, part_acc, part_mass,
+            scale_x, scale_y, center_x, center_y, scale_mass);
 
-    // create window
-    sf::RenderWindow window(sf::VideoMode(screen_size, screen_size), "");
+    // run iterations
+    for(size_t i=0; i<nsteps; i++) {
 
-    // create particles
-    vector<sf::CircleShape> part_vec;
-    for(size_t i=0; i<npart; i++) {
-        sf::CircleShape shape(part_mas[i]/mass_scale*1.0);
-        shape.setFillColor(sf::Color::White);
-        shape.setPosition(part_pos[2*i+0], part_pos[2*i+1]);
-        part_vec.push_back(shape);
+        // update particle - step 1 update acceleration
+        begin = clock();
+        update_acc(npart, part_pos, part_vel, part_acc,
+                part_mass, grav_const);
+        end = clock();
+        dt_ms = ((float)(end-begin))/((float)(CLOCKS_PER_SEC)/1.0e9);
+        tacc += dt_ms;
+
+        // update particle - step 2 update velocity
+        begin = clock();
+        update_vel(npart, part_vel, part_acc, delta_t);
+        end = clock();
+        dt_ms = ((float)(end-begin))/((float)(CLOCKS_PER_SEC)/1.0e9);
+        tvel += dt_ms;
+        
+        // update particle - step 3 update velocity
+        begin = clock();
+        update_pos(npart, part_pos, part_vel, delta_t);
+        end = clock();
+        dt_ms = ((float)(end-begin))/((float)(CLOCKS_PER_SEC)/1.0e9);
+        tpos += dt_ms;
     }
 
-    // while window open draw and update particles
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
-                window.close();
-        }
-
-        // draw particles
-        window.clear();
-        for(size_t i=0; i<npart; i++) {
-            window.draw(part_vec[i]);
-        }
-        window.display();
-
-        // update particle
-        update(npart, part_pos, part_vel, part_acc, part_mas, part_force);
-        for(size_t i=0; i<npart; i++) {
-            part_vec[i].setPosition(part_pos[2*i+0], part_pos[2*i+1]);
-        }
-    }
-
-    return 0;
+    // print out timing information
+    printf("update_acc: %fns/particle/step\n", tacc/npart/nsteps);
+    printf("update_vel: %fns/particle/step\n", tvel/npart/nsteps);
+    printf("update_pos: %fns/particle/step\n", tpos/npart/nsteps);
 }

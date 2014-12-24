@@ -4,8 +4,7 @@ COPTS= -Wall -O3
 all: main
 
 main: main.o utils.o sim.o
-	$(CC) main.o utils.o sim.o -o main $(COPTS)\
-	    -lsfml-graphics -lsfml-window -lsfml-system
+	$(CC) main.o utils.o sim.o -o main $(COPTS)
 
 main.o: main.cpp
 	$(CC) -c main.cpp $(COPTS)
