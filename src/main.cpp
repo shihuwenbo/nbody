@@ -24,7 +24,7 @@ int main() {
     // create particles
     vector<sf::CircleShape> part_vec;
     for(size_t i=0; i<npart; i++) {
-        sf::CircleShape shape(part_mas[i]/mass_scale*2.0);
+        sf::CircleShape shape(part_mas[i]/mass_scale*1.0);
         shape.setFillColor(sf::Color::White);
         shape.setPosition(part_pos[2*i+0], part_pos[2*i+1]);
         part_vec.push_back(shape);
