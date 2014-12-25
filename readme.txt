@@ -7,7 +7,6 @@ parallelized function for updating acceleration
 - 62x speed up on t10 on 16384 particles
 
 as of dec 19, 2014:
-simple 2d sequantial collission less n-body simulation code
+simple 2d sequantial collission less newtonian n-body simulation code
 - uniform spacial initialization with 0 initial velocity
 - particle-particle method (n^2), leapfrog update
-- requires sfml to compile and run
