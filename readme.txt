@@ -1,6 +1,6 @@
 as of dec 24, 2014
 added new parallel function for updating acceleration
-- using tiling and shared memory
+- using tiling and shared memory to hide global memory latency
 - 68x speed up on t10 on 2048 particles
 - 254x speed up on t10 on 4096 particles
 - 168x speed up on t10 on 8192 particles
