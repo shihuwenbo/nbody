@@ -7,6 +7,8 @@ added new parallel function for updating acceleration
 - 195x speed up on t10 on 16384 particles
 - 222x speed up on t10 on 32768 particles
 - 314x speed up on m2070 on 16384 particles
+added new parallel function that enhances data coalescence
+- 350x speed up on m2070 on 16384 particles
 
 as of dec 23, 2014:
 parallelized function for updating acceleration
