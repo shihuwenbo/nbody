@@ -30,4 +30,8 @@ void update_acc_gpu(size_t n, float *part_pos, float *part_vel,
 void update_acc_tile_gpu(size_t n, float *part_pos, float *part_vel,
         float *part_acc, float *part_mass, float grav_const);
 
+// update acceleration using gpu
+void update_acc_tile_trans_gpu(size_t n, float *part_pos, float *part_vel,
+        float *part_acc, float *part_mass, float grav_const);
+
 #endif

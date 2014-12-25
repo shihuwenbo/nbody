@@ -4,7 +4,7 @@ COPTS= -Wall -O3
 NVCC=nvcc
 NVLIBS=-L/u/local/cuda/current/lib64 -lcuda -lcudart
 NVINCLUDES=-I/u/local/cuda/current/include
-NVOPTS=-O3 -arch sm_13
+NVOPTS=-O3 -arch sm_20 -use_fast_math
 
 all: main
 
