@@ -57,23 +57,16 @@ void update_acc(size_t n, float *part_pos, float *part_vel,
             float yj = part_pos[2*j+1];
             float mj = part_mass[j];
             
-            if(i != j) {
-                float dx = xj-xi;
-                float dy = yj-yi;
-                float r = sqrt(dx*dx+dy*dy);
+            float dx = xj-xi;
+            float dy = yj-yi;
+            float r = sqrt(dx*dx+dy*dy)+eps;
                 
-                // avoid infinite acceleration
-                if(r < 1.0) {
-                    r = 1.0;
-                }
-
-                // update acceleration
-                float f = grav_const*mi*mj/(r*r);
-                float fx = f*(dx/r);
-                float fy = f*(dy/r);
-                part_acc[2*i+0] += fx/mi;
-                part_acc[2*i+1] += fy/mi;
-            }
+            // update acceleration
+            float f = grav_const*mi*mj/(r*r);
+            float fx = f*(dx/r);
+            float fy = f*(dy/r);
+            part_acc[2*i+0] += fx/mi;
+            part_acc[2*i+1] += fy/mi;
         }
     }
 }

@@ -19,8 +19,8 @@ int main() {
     float diff_acc = 0.0;
 
     // simulation parameters
-    const size_t npart = 2048;
-    const size_t nsteps = 1000;
+    const size_t npart = 16384;
+    const size_t nsteps = 10;
     const float size_x = 1024.0;
     const float size_y = 512.0;
     const float center_x = size_x/2.0;
@@ -28,7 +28,7 @@ int main() {
     const float scale_x = size_x;
     const float scale_y = size_y;
     const float delta_t = 1.0e3;
-    const float scale_mass = 100000.0;
+    const float scale_mass = 1.0e6;
     const float grav_const = 6.67384e-11;
 
     // initialize particles on host
@@ -71,7 +71,7 @@ int main() {
 
         // step 1 update acceleration on device
         begin = clock();
-        update_acc_gpu(npart, gpart_pos, gpart_vel, gpart_acc,
+        update_acc_tile_gpu(npart, gpart_pos, gpart_vel, gpart_acc,
                 gpart_mass, grav_const);
         end = clock();
         dt_ms = ((float)(end-begin))/((float)(CLOCKS_PER_SEC)/1.0e9);

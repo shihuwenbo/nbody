@@ -1,3 +1,11 @@
+as of dec 24, 2014
+added new parallel function for updating acceleration
+- using tiling and shared memory
+- 68x speed up on t10 on 2048 particles
+- 254x speed up on t10 on 4096 particles
+- 168x speed up on t10 on 8192 particles
+- 195x speed up on t10 on 16384 particles
+
 as of dec 23, 2014:
 parallelized function for updating acceleration
 - 1 thread per particle, simple update

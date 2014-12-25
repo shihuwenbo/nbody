@@ -3,6 +3,8 @@
 #ifndef SIM
 #define SIM
 
+const float eps = 1.0;
+
 // initialize particles, position and velocity
 void init(size_t n, float *part_pos, float *part_vel,
         float *part_acc, float *part_mass,
@@ -24,5 +26,8 @@ void update_pos(size_t n, float *part_pos, float *part_vel, float delta_t);
 void update_acc_gpu(size_t n, float *part_pos, float *part_vel,
         float *part_acc, float *part_mass, float grav_const);
 
+// update acceleration using gpu
+void update_acc_tile_gpu(size_t n, float *part_pos, float *part_vel,
+        float *part_acc, float *part_mass, float grav_const);
 
 #endif
