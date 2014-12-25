@@ -9,7 +9,7 @@ added new parallel function for updating acceleration
 - 314x speed up on m2070 on 16384 particles
 added new parallel function that enhances data coalescence
 - 350x speed up on m2070 on 16384 particles
-used -fast_math flag when compiling
+added -use_fast_math flag in make file
 - 400x speed up on m2070 on 16384 particles
 
 as of dec 23, 2014:
